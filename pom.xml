@@ -1,0 +1,107 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.Talend.demo</groupId>
+  <artifactId>tckdemo</artifactId>
+  <packaging>jar</packaging>
+  <version> 1.0-SNAPSHOT</version>
+  <name>tckdemo</name>
+
+
+
+  <properties>
+    <junit5.version>5.8.2</junit5.version>
+    <component-runtime.version>1.54.0</component-runtime.version>
+    <lombok.version>1.18.24</lombok.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.talend.sdk.component</groupId>
+      <artifactId>component-api</artifactId>
+      <version>${component-runtime.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Tests -->
+    <dependency>
+      <groupId>org.talend.sdk.component</groupId>
+      <artifactId>component-runtime-junit</artifactId>
+      <version>${component-runtime.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit</groupId>
+      <artifactId>junit-bom</artifactId>
+      <version>${junit5.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.talend.sdk.component</groupId>
+        <artifactId>talend-component-maven-plugin</artifactId>
+        <version>${component-runtime.version}</version>
+        <executions>
+          <execution>
+            <id>talend-svg2png</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>svg2png</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>talend-dependencies</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>dependencies</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>talend-component-validate</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+            <configuration>
+              <validateModel>false</validateModel>
+              <validatePlaceholder>false</validatePlaceholder>
+              <validateDocumentation>false</validateDocumentation>
+              <validateWording>false</validateWording>
+              <failOnValidateExceptions>false</failOnValidateExceptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>talend-component-bundle</id>
+            <phase>package</phase>
+            <goals>
+              <goal>car</goal>
+            </goals>
+            <configuration>
+              <excludeArtifactsFilter>
+                com.fasterxml.jackson.core:jackson-databind,com.fasterxml.jackson.core:jackson-core,com.fasterxml.jackson.core:jackson-annotations
+              </excludeArtifactsFilter>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>8</source>
+          <target>8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
