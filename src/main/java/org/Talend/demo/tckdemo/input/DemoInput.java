@@ -10,6 +10,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.util.Iterator;
+import java.util.List;
 
 
 public class DemoInput implements Serializable {
@@ -22,37 +26,44 @@ public class DemoInput implements Serializable {
 
     private int recordIndex = 0;
 
+    private String categ;
+
+    private Iterator<Record> iterator = null;
+
 
     public DemoInput(final InputConfig config,
                      final RuntimeService service,
                      final I18n i18n,
                      final long bundleSize,
-                     final int mapperIndex) {
+                     final int mapperIndex,
+                     final String categ) {
         this.config = config;
         this.service = service;
         this.i18n = i18n;
         this.bundleSize = bundleSize;
         this.mapperIndex = mapperIndex;
+        this.categ = categ;
     }
 
     @PostConstruct
-    public void init() throws IOException {
-        //Here we can init connections
+    public void init() throws IOException, URISyntaxException, InterruptedException {
+        List<Record> todos = service.getTodo(this.config, this.categ, this.mapperIndex);
+        iterator = todos.iterator();
     }
 
     @Producer
     public Record next() {
-        if(this.recordIndex > this.mapperIndex){
-            return null;
-        }
-        recordIndex++;
+       if(iterator == null || !iterator.hasNext()){
+           return null;
+       }
 
-        return service.buildARecord(recordIndex, mapperIndex, bundleSize, config);
+       return iterator.next();
     }
 
     @PreDestroy
     public void release() {
         // clean and release any resources
+        iterator = null;
     }
 
 }

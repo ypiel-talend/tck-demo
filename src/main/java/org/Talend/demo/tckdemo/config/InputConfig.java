@@ -9,7 +9,8 @@ import java.io.Serializable;
 
 @Data
 @GridLayout({@GridLayout.Row({"dataset"}),
-        @GridLayout.Row({"message"})})
+        @GridLayout.Row({"addMapperIndex"})
+})
 @GridLayout(names = GridLayout.FormType.ADVANCED, value = {@GridLayout.Row({"dataset"}),
         @GridLayout.Row({"logLevel"})})
 public class InputConfig implements Serializable {
@@ -18,10 +19,7 @@ public class InputConfig implements Serializable {
     private Dataset dataset;
 
     @Option
-    private long size;
-
-    @Option
-    private String message;
+    private boolean addMapperIndex;
 
     @Option
     @DefaultValue("NONE")
