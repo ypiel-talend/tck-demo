@@ -33,7 +33,7 @@ public class RuntimeService implements Serializable {
     @Service
     private RecordBuilderFactory recordBuilderFactory;
 
-    private URI getURI(Datastore datastore, String path) throws URISyntaxException {
+    public static URI getURI(Datastore datastore, String path) throws URISyntaxException {
         return new URI("http", null, datastore.getIp(), datastore.getPort(), path, null, null);
     }
 

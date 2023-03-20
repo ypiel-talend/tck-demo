@@ -1,9 +1,12 @@
 package org.Talend.demo.tckdemo.service;
 
 import org.Talend.demo.tckdemo.config.Datastore;
+import org.talend.sdk.component.api.configuration.Option;
 import org.talend.sdk.component.api.service.Service;
 import org.talend.sdk.component.api.service.completion.SuggestionValues;
 import org.talend.sdk.component.api.service.completion.Suggestions;
+import org.talend.sdk.component.api.service.healthcheck.HealthCheck;
+import org.talend.sdk.component.api.service.healthcheck.HealthCheckStatus;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -24,12 +27,13 @@ import java.util.List;
 public class UIService implements Serializable {
 
     public final static String LIST_TODO_CATEG = "LIST_TODO_CATEG";
+    public final static String ACTION_HEALTH_CHECK = "ACTION_HEALTH_CHECK";
 
     @Suggestions(LIST_TODO_CATEG)
     public SuggestionValues listCategs(Datastore datastore) throws IOException, InterruptedException, URISyntaxException {
         HttpClient client = HttpClient.newHttpClient();
 
-        URI uri = new URI("http", null, datastore.getIp(), datastore.getPort(), "/categ/list", null, null);
+        URI uri = RuntimeService.getURI(datastore, "/categ/list");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
                 .GET()
@@ -48,6 +52,32 @@ public class UIService implements Serializable {
         }
 
         return new SuggestionValues(false, items);
+    }
+
+    @HealthCheck(ACTION_HEALTH_CHECK)
+    public HealthCheckStatus check(@Option final Datastore datastore) {
+        String msg = "TODO application can't be reached.";
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+
+            URI uri = RuntimeService.getURI(datastore, "/check");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Authorization", datastore.getBearer().getToken())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if(response.statusCode() == 200){
+                return new HealthCheckStatus(HealthCheckStatus.Status.OK, "TODO application reached.");
+            }
+            msg = String.format("TODO application returns wrong status '%s'.", response.statusCode());
+        }
+        catch (Exception e){
+            msg = String.format("Exception connecting to TODO application: %s", e.getMessage());
+        }
+
+        return new HealthCheckStatus(HealthCheckStatus.Status.KO, msg);
     }
 
 

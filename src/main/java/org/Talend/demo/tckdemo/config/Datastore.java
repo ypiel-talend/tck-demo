@@ -5,8 +5,10 @@ import org.Talend.demo.tckdemo.config.auth.Basic;
 import org.Talend.demo.tckdemo.config.auth.Bearer;
 import org.Talend.demo.tckdemo.config.auth.PAT;
 import org.Talend.demo.tckdemo.migration.DSOMigration;
+import org.Talend.demo.tckdemo.service.UIService;
 import org.talend.sdk.component.api.component.Version;
 import org.talend.sdk.component.api.configuration.Option;
+import org.talend.sdk.component.api.configuration.action.Checkable;
 import org.talend.sdk.component.api.configuration.condition.ActiveIf;
 import org.talend.sdk.component.api.configuration.condition.ActiveIfs;
 import org.talend.sdk.component.api.configuration.constraint.Pattern;
@@ -19,6 +21,7 @@ import java.io.Serializable;
 
 @Data
 @DataStore("Datastore")
+@Checkable(UIService.ACTION_HEALTH_CHECK)
 @Version(value = Datastore.VERSION, migrationHandler = DSOMigration.class)
 @GridLayout({@GridLayout.Row({"ip", "port"}),
         @GridLayout.Row({"useAuthent"}),
