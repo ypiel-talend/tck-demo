@@ -5,6 +5,7 @@ import org.Talend.demo.tckdemo.config.Datastore;
 import org.Talend.demo.tckdemo.config.InputConfig;
 import org.Talend.demo.tckdemo.config.auth.Bearer;
 import org.Talend.demo.tckdemo.input.DemoInputTest;
+import org.Talend.demo.tckdemo.service.RuntimeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.talend.sdk.component.api.record.Record;
@@ -15,6 +16,8 @@ import org.talend.sdk.component.junit5.Injected;
 import org.talend.sdk.component.junit5.WithComponents;
 import org.talend.sdk.component.runtime.manager.chain.Job;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +31,9 @@ public class DemoOutputTest {
 
     @Service
     private RecordBuilderFactory recordBuilderFactory;
+
+    @Service
+    private RuntimeService service;
 
     private InputConfig config;
 
@@ -52,7 +58,7 @@ public class DemoOutputTest {
     }
 
     @Test
-    public void testBulkStore() {
+    public void testBulkStore() throws URISyntaxException, IOException, InterruptedException {
         config.getDataset().setCateg("test");
         List<Record> data = new ArrayList<>();
 
@@ -62,6 +68,8 @@ public class DemoOutputTest {
                     .build();
             data.add(todo);
         }
+
+        this.service.reset(config.getDataset().getDatastore());
 
         this.handler.setInputData(data);
 
@@ -75,6 +83,24 @@ public class DemoOutputTest {
                 .to("out") //
                 .build() //
                 .run();
+
+        Job
+                .components() //
+                .component("emitter", "Demo://Mapper?" + configStr) //
+                .component("out", "test://collector") //
+                .connections() //
+                .from("emitter") //
+                .to("out") //
+                .build() //
+                .run();
+
+        final List<Record> records = handler.getCollectedData(Record.class);
+
+        assertEquals(5, records.size());
+
+        for(Record r: records){
+            System.out.println(String.format("%s: %s", r.getString("categ"),r.getString("todo")));
+        }
 
     }
 }

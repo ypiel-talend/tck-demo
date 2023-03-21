@@ -64,6 +64,17 @@ public class RuntimeService implements Serializable {
         TimeUnit.MILLISECONDS.sleep(config.getThrottling());
     }
 
+    public void reset(Datastore dso) throws URISyntaxException, IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        URI uri = getURI(dso, "/reset");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .GET()
+                .build();
+
+        client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     public List<Record> getTodo(InputConfig config, String categ, int mapperIndex) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
