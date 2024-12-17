@@ -22,7 +22,7 @@ import static org.talend.sdk.component.junit.SimpleFactory.configurationByExampl
 @WithComponents(value = "org.Talend.demo.tckdemo")
 public class DemoInputTest {
 
-    public final static int PORT = 8989;
+    public final static int PORT = 7070;
 
     @Injected
     private BaseComponentsHandler handler;

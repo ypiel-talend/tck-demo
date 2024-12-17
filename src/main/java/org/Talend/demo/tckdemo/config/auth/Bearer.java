@@ -3,6 +3,7 @@ package org.Talend.demo.tckdemo.config.auth;
 import lombok.Data;
 import org.talend.sdk.component.api.configuration.Option;
 import org.talend.sdk.component.api.configuration.ui.layout.GridLayout;
+import org.talend.sdk.component.api.configuration.ui.widget.Credential;
 
 import java.io.Serializable;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
 public class Bearer implements Serializable {
 
     @Option
+    @Credential
     private String token;
 
 }
