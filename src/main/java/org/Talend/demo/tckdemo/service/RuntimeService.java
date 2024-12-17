@@ -1,8 +1,8 @@
 package org.Talend.demo.tckdemo.service;
 
 import org.Talend.demo.tckdemo.config.Datastore;
-import org.Talend.demo.tckdemo.config.InputConfig;
 import org.Talend.demo.tckdemo.config.Filter;
+import org.Talend.demo.tckdemo.config.InputConfig;
 import org.Talend.demo.tckdemo.config.OutputConfig;
 import org.talend.sdk.component.api.exception.ComponentException;
 import org.talend.sdk.component.api.record.Record;
@@ -24,7 +24,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -37,31 +39,47 @@ public class RuntimeService implements Serializable {
         return new URI("http", null, datastore.getIp(), datastore.getPort(), path, null, null);
     }
 
-    public void storeTodo(HttpClient httpClient, List<Record> buffer, OutputConfig config) throws InterruptedException, URISyntaxException, IOException {
+    public Map<String, List<String>> storeTodo(HttpClient httpClient, List<Record> buffer, OutputConfig config) throws InterruptedException, URISyntaxException, IOException {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (Record r : buffer) {
             JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-            objectBuilder.add("categ", config.getDataset().getCateg())
+            objectBuilder.add("categ", r.getString("categ"))
                     .add("todo", r.getString("todo"));
             arrayBuilder.add(objectBuilder.build());
         }
+
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        objectBuilder.add("todos", arrayBuilder.build());
+        objectBuilder.add("createCategory", config.isCreateCateg());
 
         URI uri = getURI(config.getDataset().getDatastore(), "/todo/bulkAdd");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
                 .header("Content-Type", "application/json")
-                .header("Authorization", config.getDataset().getDatastore().getBearer().getToken())
+                .header("Authorization", "Bearer " + config.getDataset().getDatastore().getBearer().getToken())
                 .header("Categ", config.getDataset().getCateg())
-                .POST(HttpRequest.BodyPublishers.ofString(arrayBuilder.build().toString()))
+                .POST(HttpRequest.BodyPublishers.ofString(objectBuilder.build().toString()))
                 .build();
 
         HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
+        JsonReader reader = Json.createReader(new StringReader(httpResponse.body()));
+        JsonObject payload = reader.readObject();
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("inserted", new ArrayList<>());
+        result.put("rejected", new ArrayList<>());
+
+        payload.getJsonArray("added").forEach(v -> result.get("inserted").add(v.toString()));
+        payload.getJsonArray("rejected").forEach(v -> result.get("rejected").add(v.toString()));
+
         if (httpResponse.statusCode() != 200) {
-            throw new ComponentException("Store todoa has failed, status:" + httpResponse.statusCode());
+            throw new ComponentException("Store todo has failed, status:" + httpResponse.statusCode());
         }
 
         TimeUnit.MILLISECONDS.sleep(config.getThrottling());
+
+        return result;
     }
 
     public void reset(Datastore dso) throws URISyntaxException, IOException, InterruptedException {
